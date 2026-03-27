@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovaMind AI v3.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- API KEY MODAL -->
+  <div class="modal-overlay" id="apiModal">
+    <div class="modal">
+      <div class="modal-logo">Nova<span>Mind</span> <em>v3.0</em></div>
+      <h2>🔑 Enter Gemini API Key</h2>
+      <p>Enter your <strong style="color:#7c6aff">free</strong> Google Gemini API key to power NovaMind.</p>
+      <input type="password" id="apiKeyInput" placeholder="AIza..." autocomplete="off">
+      <button class="modal-btn" onclick="saveApiKey()">Continue →</button>
+      <div class="modal-note">
+        <span>🆓 Get FREE key:</span> Go to <span>aistudio.google.com</span> → <span>"Get API Key"</span><br><br>
+        ✅ No credit card &nbsp;✅ Free forever &nbsp;✅ Just a Google account
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN / REGISTER MODAL -->
+  <div class="modal-overlay" id="authModal" style="display:none">
+    <div class="modal">
+      <div class="modal-logo">Nova<span>Mind</span> <em>v3.0</em></div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">🔐 Login</button>
+        <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">✨ Register</button>
+      </div>
+      <div id="loginForm">
+        <input type="email"    id="loginEmail"    placeholder="Email address">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button class="modal-btn" onclick="doLogin()">Login →</button>
+        <p class="auth-skip" onclick="skipAuth()">👤 Skip — continue as guest</p>
+      </div>
+      <div id="registerForm" style="display:none">
+        <input type="text"     id="regUsername" placeholder="Username (min 3 characters)">
+        <input type="email"    id="regEmail"    placeholder="Email address">
+        <input type="password" id="regPassword" placeholder="Password (min 6 characters)">
+        <button class="modal-btn" onclick="doRegister()">Create Account →</button>
+        <p class="auth-skip" onclick="skipAuth()">👤 Skip — continue as guest</p>
+      </div>
+      <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">Nova<span>Mind</span></div>
+    <div class="mode-tabs">
+      <button class="mode-btn active" onclick="switchMode('chat')">💬 Chat</button>
+      <button class="mode-btn" onclick="switchMode('summarize')">📄 Summarize</button>
+      <button class="mode-btn" onclick="switchMode('calc')">🧮 Calc</button>
+    </div>
+    <div class="header-right">
+      <div id="userBadge"></div>
+      <button class="icon-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
+      <button class="icon-btn" onclick="exportCurrentChat()" title="Export Chat">📤</button>
+      <button class="icon-btn" onclick="newChat()" title="New Chat">✏️</button>
+      <div class="status-dot"><div class="dot"></div>ONLINE</div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section history-section">
+        <div class="sidebar-title">🕘 Chat History
+          <button class="sidebar-title-btn" onclick="newChat()">+ New</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="history-empty">No saved chats yet.<br>Start chatting!</div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">📎 Files</div>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <span class="upload-icon">⬆️</span>
+          <p>Drop files here or<br><strong>click to upload</strong><br>
+          <span style="font-size:0.62rem;opacity:0.6">TXT, CSV, PDF, JSON, MD</span></p>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".txt,.pdf,.csv,.md,.json">
+        <div class="file-list" id="fileList"></div>
+      </div>
+      <div class="quick-actions">
+        <div class="quick-label">Quick Prompts</div>
+        <button class="quick-btn" onclick="quickPrompt('Summarize the uploaded file in bullet points')">📋 Summarize File</button>
+        <button class="quick-btn" onclick="quickPrompt('Extract key insights and important numbers from the file')">🔍 Key Insights</button>
+        <button class="quick-btn" onclick="quickPrompt('What questions can I ask about this document?')">❓ Suggest Questions</button>
+        <button class="quick-btn" onclick="quickPrompt('Translate and simplify the main content to plain English')">🌐 Simplify Text</button>
+      </div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area">
+
+      <!-- CHAT PANEL -->
+      <div class="panel active" id="chatPanel">
+        <div class="messages" id="messages">
+          <div class="welcome" id="welcomeScreen">
+            <span class="welcome-icon">🤖</span>
+            <h2>Hello! I'm NovaMind</h2>
+            <p>Powered by Google Gemini — Chat, analyze files,<br>summarize documents, and solve math problems.</p>
+            <div class="welcome-chips">
+              <div class="chip" onclick="quickPrompt('What can you do?')">What can you do?</div>
+              <div class="chip" onclick="quickPrompt('Write a short poem about AI')">Write a poem</div>
+              <div class="chip" onclick="quickPrompt('Explain quantum computing simply')">Explain quantum computing</div>
+              <div class="chip" onclick="quickPrompt('Give me a pasta carbonara recipe')">Give me a recipe</div>
+              <div class="chip" onclick="quickPrompt('Help me write a professional email')">Write an email</div>
+              <div class="chip" onclick="quickPrompt('What are the latest trends in AI?')">AI trends</div>
+            </div>
+          </div>
+        </div>
+        <div class="input-area">
+          <div class="context-bar" id="contextBar"></div>
+          <div class="input-row">
+            <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach File">📎</button>
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice Input">🎤</button>
+            <textarea id="chatInput" placeholder="Ask anything… (Shift+Enter for new line)"
+              rows="1" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount()"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+          </div>
+          <div class="input-footer">
+            <span id="charCount" class="char-count"></span>
+            <span class="input-hint">Enter to send · Shift+Enter for new line</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMARIZER PANEL -->
+      <div class="panel" id="summarizePanel">
+        <div class="summarizer-panel">
+          <div class="sum-toolbar">
+            <h3>📄 Document Summarizer</h3>
+            <select class="sum-select" id="sumStyle">
+              <option value="bullet">Bullet Points</option>
+              <option value="paragraph">Paragraph</option>
+              <option value="tldr">TL;DR (1 line)</option>
+              <option value="detailed">Detailed Analysis</option>
+              <option value="executive">Executive Summary</option>
+            </select>
+            <button class="sum-go-btn" id="sumBtn" onclick="runSummarizer()">✨ Summarize</button>
+            <button class="sum-copy-btn" onclick="copySummary()">📋 Copy</button>
+          </div>
+          <div class="sum-body">
+            <div class="sum-pane">
+              <div class="sum-pane-title">📝 Input Text <span class="sum-char-count" id="sumCharCount"></span></div>
+              <textarea class="sum-textarea" id="sumInput" placeholder="Paste your text here, or upload a file..." oninput="updateSumCharCount()"></textarea>
+            </div>
+            <div class="sum-pane">
+              <div class="sum-pane-title">✨ Summary</div>
+              <textarea class="sum-textarea" id="sumOutput" readonly placeholder="Your AI summary will appear here..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALCULATOR PANEL -->
+      <div class="panel" id="calcPanel">
+        <div class="calc-panel">
+          <div class="calculator">
+            <div class="calc-header">🧮 Smart Calculator</div>
+            <div class="calc-display">
+              <div class="calc-expression" id="calcExpression"></div>
+              <div class="calc-result" id="calcResult">0</div>
+            </div>
+            <div class="calc-grid">
+              <button class="calc-btn clear" onclick="calcClear()">C</button>
+              <button class="calc-btn op"    onclick="calcBackspace()">⌫</button>
+              <button class="calc-btn op"    onclick="calcOp('(')">(</button>
+              <button class="calc-btn op"    onclick="calcOp('/')">÷</button>
+              <button class="calc-btn" onclick="calcNum('7')">7</button>
+              <button class="calc-btn" onclick="calcNum('8')">8</button>
+              <button class="calc-btn" onclick="calcNum('9')">9</button>
+              <button class="calc-btn op" onclick="calcOp('*')">×</button>
+              <button class="calc-btn" onclick="calcNum('4')">4</button>
+              <button class="calc-btn" onclick="calcNum('5')">5</button>
+              <button class="calc-btn" onclick="calcNum('6')">6</button>
+              <button class="calc-btn op" onclick="calcOp('-')">−</button>
+              <button class="calc-btn" onclick="calcNum('1')">1</button>
+              <button class="calc-btn" onclick="calcNum('2')">2</button>
+              <button class="calc-btn" onclick="calcNum('3')">3</button>
+              <button class="calc-btn op" onclick="calcOp('+')">+</button>
+              <button class="calc-btn op"   onclick="calcOp('%')">%</button>
+              <button class="calc-btn zero" onclick="calcNum('0')">0</button>
+              <button class="calc-btn op"   onclick="calcNum('.')">.</button>
+              <button class="calc-btn eq"   onclick="calcEquals()">=</button>
+            </div>
+            <div class="calc-history-box">
+              <div class="calc-history-title">Recent Calculations</div>
+              <div class="calc-history" id="calcHistory"></div>
+            </div>
+            <div class="ai-calc">
+              <div class="ai-calc-title">⚡ AI Math Solver</div>
+              <div class="ai-calc-row">
+                <input class="ai-calc-input" id="aiMathInput" placeholder="e.g. what is 15% of 240?" onkeydown="if(event.key==='Enter')solveAiMath()">
+                <button class="ai-calc-btn" onclick="solveAiMath()">Ask AI</button>
+              </div>
+              <div class="ai-calc-result" id="aiMathResult"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div id="voiceIndicator" class="voice-indicator" style="display:none">
+    <div class="voice-pulse"></div>
+    <span>Listening... speak now</span>
+    <button onclick="stopVoice()">✕</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
